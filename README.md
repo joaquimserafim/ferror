@@ -1,6 +1,6 @@
 # ts-try
 
-A tiny, dependency‑free set of **Result** types and helpers for TypeScript that let you return values instead of throwing exceptions—**Rust‑style**. It ships two helpers: `trySyncFn` and `tryAsyncFn`.
+A tiny, dependency‑free set of **Result** types and helpers for TypeScript that let you return values instead of throwing exceptions—**Rust‑style**. It ships two wrappers, `trySyncFn` and `tryAsyncFn`, plus the `ok`/`err` constructors for authoring your own Result‑returning functions.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-ready-yellow.svg)](https://pnpm.io)
@@ -134,11 +134,21 @@ export type Result<T, E extends Error = Error> = Ok<T> | Err<E>;
 function trySyncFn<T, E extends Error = Error>(fn: () => T): Result<T, E>;
 
 function tryAsyncFn<T, E extends Error = Error>(
-	promise: Promise<T>
-): Promise<Result<T, E>>;
+	input: PromiseLike<T> | (() => T | PromiseLike<T>)
+): Promise<Result<Awaited<T>, E>>;
+
+// Constructors for authoring your own Result-returning functions
+function ok<T>(value: T): Ok<T>;
+function err<E extends Error>(error: E): Err<E>;
 ```
 
-> Both helpers **coerce non‑Error throws** into an `Error` instance with message `Unknown error: <value>` to keep `error` consistently typed.
+> Both wrappers **coerce non‑Error throws** into an `Error` instance with message `Unknown error: <value>` to keep `error` consistently typed. The original thrown value is preserved on `error.cause`.
+
+> `tryAsyncFn` also accepts a **function returning a promise** — use that form when the function might throw synchronously before creating the promise:
+>
+> ```ts
+> const r = await tryAsyncFn(() => fetch(buildUrl(input))); // buildUrl may throw
+> ```
 
 ---
 
@@ -201,6 +211,13 @@ if (!r.ok) {
 	// r.error is NetworkError
 }
 ```
+
+> ⚠️ **Caveat**: `E` is an *unchecked assertion*. Nothing validates at runtime that
+> what was actually thrown is an `E` — if the promise above rejected with a plain
+> `Error`, `r.error` would still be *typed* `NetworkError` while being a plain
+> `Error` at runtime (e.g. `r.error.code` would be `undefined`). Only narrow `E`
+> when you control everything the wrapped operation can throw; otherwise keep the
+> default `Error` and narrow with `instanceof` at the call site.
 
 ---
 
