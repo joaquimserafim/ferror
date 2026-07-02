@@ -1,24 +1,45 @@
 {
 	"name": "@joaquimserafim/ts-try",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Lightweight Rust-inspired Result type and helpers for TypeScript to replace try/catch with explicit, type-safe error handling.",
+	"type": "commonjs",
 	"main": "dist/index.js",
 	"module": "dist/index.mjs",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.mts",
+				"default": "./dist/index.mjs"
+			},
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			}
+		},
+		"./package.json": "./package.json"
+	},
+	"sideEffects": false,
 	"files": [
 		"dist",
 		"README.md",
 		"LICENSE"
 	],
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "pnpm@11.9.0",
 	"scripts": {
 		"build": "tsdown",
 		"test": "vitest",
+		"test:ci": "vitest run",
+		"typecheck": "tsc --noEmit",
 		"coverage": "vitest run --coverage",
-		"prepublishOnly": "pnpm run build",
+		"prepack": "pnpm run build",
 		"prepare": "husky",
 		"format": "biome check .",
 		"format:fix": "biome check --write .",
-		"format:ci": "git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.(ts|tsx|js|jsx|json)$' | xargs -r biome check --write || true"
+		"format:ci": "git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.(ts|mts|cts|tsx|js|mjs|cjs|jsx|json)$' | xargs -r biome check --no-errors-on-unmatched"
 	},
 	"keywords": [
 		"result",
@@ -44,7 +65,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/joaquimserafim/ts-try.git"
+		"url": "git+https://github.com/joaquimserafim/ts-try.git"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",

@@ -1,0 +1,8 @@
+# Approve dependencies that ship a native-binary install script.
+# pnpm 10+ no longer reads the "pnpm" field from package.json; build-script
+# approvals live here. Without this, `pnpm install` exits non-zero in CI.
+onlyBuiltDependencies:
+  - esbuild
+  - "@biomejs/biome"
+allowBuilds:
+  esbuild: true

@@ -4,49 +4,55 @@ on:
     push:
         tags:
             - "v*.*.*"
-    workflow_dispatch:
 
 permissions:
     contents: write # needed to create GitHub Releases
 
 jobs:
-    publish:
+    release:
         name: Create GitHub Release
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
             - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+              uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
             - name: Use Node.js 22
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 22
-                  registry-url: https://registry.npmjs.org
                   cache: "pnpm"
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Verify tag matches package.json version
+              run: |
+                  PKG_VERSION="v$(node -p "require('./package.json').version")"
+                  if [ "$PKG_VERSION" != "$GITHUB_REF_NAME" ]; then
+                      echo "Tag $GITHUB_REF_NAME does not match package.json $PKG_VERSION" >&2
+                      exit 1
+                  fi
+
             - name: Run tests
-              run: pnpm test --if-present
+              run: pnpm test:ci
+
+            - name: Typecheck
+              run: pnpm typecheck
 
             - name: Build package
               run: pnpm build
 
             - name: Archive dist artifacts
-              if: success()
-              run: |
-                  tar -czf dist.tar.gz dist || echo "no dist folder to archive"
+              run: tar -czf dist.tar.gz dist
 
             - name: Create GitHub Release
-              uses: softprops/action-gh-release@v2
+              uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
               with:
                   generate_release_notes: true
+                  fail_on_unmatched_files: true
                   files: |
                       dist.tar.gz
                       package.json
