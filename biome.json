@@ -10,10 +10,12 @@
 		"includes": [
 			"src/**",
 			"*.ts",
+			"*.mts",
+			"*.cts",
 			"*.js",
 			"*.json",
-			"!vitest.config.ts",
-			"!tsdown.config.ts"
+			"!vitest.config.mts",
+			"!tsdown.config.mts"
 		]
 	},
 	"formatter": {
