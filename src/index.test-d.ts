@@ -6,13 +6,13 @@ import {
 	type Ok,
 	ok,
 	type Result,
-	tryAsyncFn,
-	trySyncFn,
+	tryAsync,
+	trySync,
 } from "./index";
 
 describe("Result type-level behavior", () => {
 	it("narrows on the ok discriminant", () => {
-		const result = trySyncFn(() => 1);
+		const result = trySync(() => 1);
 		if (result.ok) {
 			expectTypeOf(result.value).toEqualTypeOf<number>();
 			expectTypeOf(result.error).toEqualTypeOf<undefined>();
@@ -27,16 +27,14 @@ describe("Result type-level behavior", () => {
 		expectTypeOf(err(new TypeError("x"))).toEqualTypeOf<Err<TypeError>>();
 	});
 
-	it("tryAsyncFn unwraps nested promises", () => {
+	it("tryAsync unwraps nested promises", () => {
 		const nested = {} as Promise<Promise<number>>;
-		expectTypeOf(tryAsyncFn(nested)).resolves.toEqualTypeOf<
-			Result<number>
-		>();
+		expectTypeOf(tryAsync(nested)).resolves.toEqualTypeOf<Result<number>>();
 	});
 
-	it("tryAsyncFn accepts a promise-returning function", () => {
+	it("tryAsync accepts a promise-returning function", () => {
 		expectTypeOf(
-			tryAsyncFn(() => Promise.resolve("x")),
+			tryAsync(() => Promise.resolve("x")),
 		).resolves.toEqualTypeOf<Result<string>>();
 	});
 
@@ -44,7 +42,7 @@ describe("Result type-level behavior", () => {
 		class MyError extends Error {
 			code = 1;
 		}
-		const result = trySyncFn<number, MyError>(() => 1);
+		const result = trySync<number, MyError>(() => 1);
 		if (!result.ok) {
 			expectTypeOf(result.error).toEqualTypeOf<MyError>();
 		}
