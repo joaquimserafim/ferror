@@ -1,6 +1,6 @@
 {
-	"name": "@joaquimserafim/ts-try",
-	"version": "1.1.0",
+	"name": "ferror",
+	"version": "2.0.0",
 	"description": "Lightweight Rust-inspired Result type and helpers for TypeScript to replace try/catch with explicit, type-safe error handling.",
 	"type": "commonjs",
 	"main": "dist/index.js",
@@ -65,7 +65,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/joaquimserafim/ts-try.git"
+		"url": "git+https://github.com/joaquimserafim/ferror.git"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.6",

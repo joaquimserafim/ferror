@@ -1,12 +1,12 @@
-# ts-try
+# ferror
 
 A tiny, dependency‑free set of **Result** types and helpers for TypeScript that let you return values instead of throwing exceptions—**Rust‑style**. It ships two wrappers, `trySync` and `tryAsync`, plus the `ok`/`err` constructors for authoring your own Result‑returning functions.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-ready-yellow.svg)](https://pnpm.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![Biome Lint](https://github.com/joaquimserafim/ts-try/actions/workflows/lint.yml/badge.svg)](https://github.com/joaquimserafim/ts-try/actions/workflows/lint.yml)
-[![Release](https://github.com/joaquimserafim/ts-try/actions/workflows/release.yml/badge.svg)](https://github.com/joaquimserafim/ts-try/actions/workflows/release.yml)
+[![Biome Lint](https://github.com/joaquimserafim/ferror/actions/workflows/lint.yml/badge.svg)](https://github.com/joaquimserafim/ferror/actions/workflows/lint.yml)
+[![Release](https://github.com/joaquimserafim/ferror/actions/workflows/release.yml/badge.svg)](https://github.com/joaquimserafim/ferror/actions/workflows/release.yml)
 
 ---
 
@@ -33,9 +33,9 @@ A tiny, dependency‑free set of **Result** types and helpers for TypeScript tha
 ## Install
 
 ```bash
-pnpm add @joaquimserafim/ts-try
+pnpm add ferror
 # or
-npm i @joaquimserafim/ts-try
+npm i ferror
 ```
 
 > **Requirements**: TypeScript 5+, Node 18+ (or any environment that can run the compiled JS).
@@ -45,7 +45,7 @@ npm i @joaquimserafim/ts-try
 ## Quick Start
 
 ```ts
-import { trySync, tryAsync } from "@joaquimserafim/ts-try";
+import { trySync, tryAsync } from "ferror";
 
 // Sync
 const parsed = trySync(() => JSON.parse('{"ok": true}'));
@@ -157,7 +157,7 @@ function err<E extends Error>(error: E): Err<E>;
 ### Synchronous
 
 ```ts
-import { trySync } from "@joaquimserafim/ts-try";
+import { trySync } from "ferror";
 
 const r = trySync(() => mightThrow());
 if (r.ok) {
@@ -170,7 +170,7 @@ if (r.ok) {
 ### Asynchronous
 
 ```ts
-import { tryAsync } from "@joaquimserafim/ts-try";
+import { tryAsync } from "ferror";
 
 const r = await tryAsync(fetch("/data"));
 if (!r.ok) {
