@@ -35,8 +35,8 @@
 		"test:ci": "vitest run",
 		"typecheck": "tsc --noEmit",
 		"coverage": "vitest run --coverage",
-		"prepack": "pnpm run build",
-		"prepare": "husky",
+		"prepublishOnly": "pnpm run build && test -f dist/index.mjs",
+		"prepare": "husky || true; tsdown",
 		"format": "biome check .",
 		"format:fix": "biome check --write .",
 		"format:ci": "git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.(ts|mts|cts|tsx|js|mjs|cjs|jsx|json)$' | xargs -r biome check --no-errors-on-unmatched"

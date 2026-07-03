@@ -23,7 +23,14 @@ export function ok<T>(value: T): Ok<T> {
 	return { ok: true, value, error: undefined };
 }
 
-/** Creates a failed result holding `error`. */
+/**
+ * Creates a failed result holding `error`.
+ *
+ * Note: `E extends Error` is a structural, compile-time constraint only — `err`
+ * does not runtime-validate that `error` is a real `Error` instance. Values
+ * produced by `trySync`/`tryAsync` always go through `toError`, so they are
+ * genuine `Error`s; only hand-built `err(...)` calls can hold a non-`Error`.
+ */
 export function err<E extends Error>(error: E): Err<E> {
 	return { ok: false, value: undefined, error };
 }
@@ -32,11 +39,24 @@ export function err<E extends Error>(error: E): Err<E> {
  * Normalizes a caught value into an Error instance.
  * Non-Error throws are wrapped in a new Error whose message stringifies
  * the thrown value and whose `cause` preserves it as-is.
+ *
+ * This function is total: it never throws. Coercing an arbitrary thrown value
+ * can itself fail — `String(e)` throws for a null-prototype object or a value
+ * with a throwing `toString`/`valueOf`/`Symbol.toPrimitive`, and even
+ * `e instanceof Error` throws for a revoked Proxy. When that happens we fall
+ * back to a constant message so the wrappers keep their never-throws contract.
  */
 function toError(e: unknown): Error {
-	return e instanceof Error
-		? e
-		: new Error(`Unknown error: ${String(e)}`, { cause: e });
+	try {
+		if (e instanceof Error) return e;
+		return new Error(`Unknown error: ${String(e)}`, { cause: e });
+	} catch {
+		// Assigning `cause` on a fresh Error cannot throw (no coercion, no
+		// setter), so `e` is always preserved even on this fallback path.
+		const fallback = new Error("Unknown error: [unrepresentable value]");
+		(fallback as { cause?: unknown }).cause = e;
+		return fallback;
+	}
 }
 
 /**
@@ -52,7 +72,7 @@ function toError(e: unknown): Error {
  * @param input The promise to wrap, or a function returning one.
  * @returns A Promise resolving to an object-shaped Result: `{ ok: true, value }` or `{ ok: false, error }`.
  */
-export async function tryAsyncFn<T, E extends Error = Error>(
+export async function tryAsync<T, E extends Error = Error>(
 	input: PromiseLike<T> | (() => T | PromiseLike<T>),
 ): Promise<Result<Awaited<T>, E>> {
 	try {
@@ -75,9 +95,7 @@ export async function tryAsyncFn<T, E extends Error = Error>(
  * @param fn The function to wrap.
  * @returns An object-shaped Result: `{ ok: true, value }` or `{ ok: false, error }`.
  */
-export function trySyncFn<T, E extends Error = Error>(
-	fn: () => T,
-): Result<T, E> {
+export function trySync<T, E extends Error = Error>(fn: () => T): Result<T, E> {
 	try {
 		return ok(fn());
 	} catch (e) {

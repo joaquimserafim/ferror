@@ -1,2 +1,2 @@
-pnpm coverage
+pnpm test:ci
 pnpm format:ci

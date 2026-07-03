@@ -1,6 +1,6 @@
 # ts-try
 
-A tiny, dependency‑free set of **Result** types and helpers for TypeScript that let you return values instead of throwing exceptions—**Rust‑style**. It ships two wrappers, `trySyncFn` and `tryAsyncFn`, plus the `ok`/`err` constructors for authoring your own Result‑returning functions.
+A tiny, dependency‑free set of **Result** types and helpers for TypeScript that let you return values instead of throwing exceptions—**Rust‑style**. It ships two wrappers, `trySync` and `tryAsync`, plus the `ok`/`err` constructors for authoring your own Result‑returning functions.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-ready-yellow.svg)](https://pnpm.io)
@@ -45,10 +45,10 @@ npm i @joaquimserafim/ts-try
 ## Quick Start
 
 ```ts
-import { trySyncFn, tryAsyncFn } from "@joaquimserafim/ts-try";
+import { trySync, tryAsync } from "@joaquimserafim/ts-try";
 
 // Sync
-const parsed = trySyncFn(() => JSON.parse('{"ok": true}'));
+const parsed = trySync(() => JSON.parse('{"ok": true}'));
 if (parsed.ok) {
 	// parsed.value: any
 } else {
@@ -56,7 +56,7 @@ if (parsed.ok) {
 }
 
 // Async
-const response = await tryAsyncFn(fetch("/api"));
+const response = await tryAsync(fetch("/api"));
 if (!response.ok) {
 	console.error(response.error.message);
 } else {
@@ -92,15 +92,15 @@ try {
 After (explicit results):
 
 ```ts
-const parseR = trySyncFn(() => JSON.parse(userInput));
+const parseR = trySync(() => JSON.parse(userInput));
 if (!parseR.ok) return console.error("Invalid JSON:", parseR.error.message);
 
-const fetchR = await tryAsyncFn(
+const fetchR = await tryAsync(
 	fetch("/api", { method: "POST", body: JSON.stringify(parseR.value) })
 );
 if (!fetchR.ok) return console.error("Network error:", fetchR.error.message);
 
-const jsonR = await tryAsyncFn(fetchR.value.json());
+const jsonR = await tryAsync(fetchR.value.json());
 if (!jsonR.ok) return console.error("Bad response:", jsonR.error.message);
 
 console.log(jsonR.value);
@@ -131,9 +131,9 @@ export type Result<T, E extends Error = Error> = Ok<T> | Err<E>;
 ### Functions
 
 ```ts
-function trySyncFn<T, E extends Error = Error>(fn: () => T): Result<T, E>;
+function trySync<T, E extends Error = Error>(fn: () => T): Result<T, E>;
 
-function tryAsyncFn<T, E extends Error = Error>(
+function tryAsync<T, E extends Error = Error>(
 	input: PromiseLike<T> | (() => T | PromiseLike<T>)
 ): Promise<Result<Awaited<T>, E>>;
 
@@ -144,10 +144,10 @@ function err<E extends Error>(error: E): Err<E>;
 
 > Both wrappers **coerce non‑Error throws** into an `Error` instance with message `Unknown error: <value>` to keep `error` consistently typed. The original thrown value is preserved on `error.cause`.
 
-> `tryAsyncFn` also accepts a **function returning a promise** — use that form when the function might throw synchronously before creating the promise:
+> `tryAsync` also accepts a **function returning a promise** — use that form when the function might throw synchronously before creating the promise:
 >
 > ```ts
-> const r = await tryAsyncFn(() => fetch(buildUrl(input))); // buildUrl may throw
+> const r = await tryAsync(() => fetch(buildUrl(input))); // buildUrl may throw
 > ```
 
 ---
@@ -157,9 +157,9 @@ function err<E extends Error>(error: E): Err<E>;
 ### Synchronous
 
 ```ts
-import { trySyncFn } from "@joaquimserafim/ts-try";
+import { trySync } from "@joaquimserafim/ts-try";
 
-const r = trySyncFn(() => mightThrow());
+const r = trySync(() => mightThrow());
 if (r.ok) {
 	// r.value has the return type of mightThrow()
 } else {
@@ -170,9 +170,9 @@ if (r.ok) {
 ### Asynchronous
 
 ```ts
-import { tryAsyncFn } from "@joaquimserafim/ts-try";
+import { tryAsync } from "@joaquimserafim/ts-try";
 
-const r = await tryAsyncFn(fetch("/data"));
+const r = await tryAsync(fetch("/data"));
 if (!r.ok) {
 	console.error(r.error);
 } else {
@@ -203,7 +203,7 @@ class NetworkError extends Error {
 	code = "NETWORK" as const;
 }
 
-const r = await tryAsyncFn<string, NetworkError>(
+const r = await tryAsync<string, NetworkError>(
 	new Promise<string>((_resolve, reject) => reject(new NetworkError("down")))
 );
 
